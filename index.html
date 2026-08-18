@@ -3,159 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LeerBroDeutsch 🇩🇪</title>
-    <link rel="stylesheet" href="style.css">
+    <title>LeerBroDeutsch 🇩🇪 | Platform Belajar Jerman</title>
+    <!-- Path CSS sudah disesuaikan ke folder css/ -->
+    <link rel="stylesheet" href="css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-    <!-- Navigasi Bar (Ditambah Menu Admin) -->
-    <nav class="navbar">
-        <div class="nav-brand">🇩🇪 <span>LeerBroDeutsch</span></div>
-        <ul class="nav-links">
-            <li><a href="#" onclick="showPage('home')" class="active">Kuis</a></li>
-            <li><a href="#" onclick="showPage('kamus')">Kamus</a></li>
-            <li><a href="#" onclick="showPage('flashcard')">Flashcard</a></li>
-            <li><a href="#" onclick="showPage('artikel')">Artikel</a></li>
-            <li><a href="#" onclick="showPage('admin')">Admin <span class="admin-badge">Pro</span></a></li>
-        </ul>
-    </nav>
+    <!-- Header Desktop / Mobile Top -->
+    <header class="top-header">
+        <div class="nav-brand">
+            <!-- PINTU RAHASIA ADMIN: Klik logo ini untuk buka halaman admin -->
+            <a href="admin.html" style="text-decoration: none; color: inherit;">
+                🇩🇪 <span>LeerBroDeutsch</span>
+            </a>
+        </div>
+        <div class="header-stats" id="global-stats">Memuat data...</div>
+    </header>
 
-    <!-- Konten Utama -->
     <main class="content-container">
         
-        <!-- Halaman Kuis / Home -->
-        <section id="home" class="page active-page">
-            <div class="hero-card">
-                <div class="badge">Wortschatz Challenge</div>
-                <div id="score-badge">🔥 Skor: <span id="score">0</span></div>
-                
-                <h2 id="question-text" data-answer="">Memuat pertanyaan...</h2>
-                <p style="font-size: 0.75rem; color:#8b949e; margin-top:-10px; margin-bottom: 14px;">(Kuis diambil otomatis dari Flashcard)</p>
-                
+        <!-- 1. LANDING PAGE -->
+        <section id="landing" class="page active-page">
+            <div class="hero-section">
+                <h1>Kuasai Bahasa Jerman Lebih Cepat.</h1>
+                <p>Platform interaktif untuk memperkaya Wortschatz, dari level A1 hingga C2.</p>
+                <div class="hero-cta">
+                    <button onclick="showPage('kuis')" class="btn-primary">Mulai Latihan 🚀</button>
+                    <button onclick="showPage('artikel')" class="btn-secondary">Baca Artikel 📚</button>
+                </div>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card"><h3>🧠 Kuis Adaptif</h3><p>Evaluasi memori kosakatamu.</p></div>
+                <div class="feature-card"><h3>🔊 Pengucapan</h3><p>Pelajari aksen Jerman asli.</p></div>
+                <div class="feature-card"><h3>📖 Reading</h3><p>Teks disesuaikan CEFR.</p></div>
+            </div>
+        </section>
+
+        <!-- 2. KUIS -->
+        <section id="kuis" class="page">
+            <div class="card main-card">
+                <div class="card-header">
+                    <span class="badge">Wortschatz Challenge</span>
+                    <div class="stats-group">
+                        <span id="streak-badge">🔥 Streak: 0</span>
+                        <span id="score-badge">⭐ Skor: <span id="score">0</span></span>
+                    </div>
+                </div>
+                <h2 id="question-text">Memuat...</h2>
                 <div class="input-group">
                     <input type="text" id="user-answer" placeholder="Ketik jawaban Jerman..." autocomplete="off">
-                    <button id="submit-btn">Kirim ⚡</button>
+                    <button id="submit-btn" class="btn-primary">Kirim</button>
                 </div>
-                <p id="feedback"></p>
+                <p id="feedback" class="feedback-text"></p>
             </div>
         </section>
 
-        <!-- Halaman Kamus Interaktif -->
+        <!-- 3. KAMUS -->
         <section id="kamus" class="page">
-            <div class="hero-card">
-                <div class="ai-header">
-                    <span class="ai-icon">🤖</span>
-                    <h2>AI Kamus</h2>
-                </div>
-                
+            <div class="card main-card">
+                <div class="card-header"><span class="badge">AI Kamus & Deteksi</span></div>
                 <div class="input-group">
                     <input type="text" id="search-dict" placeholder="Ketik kata (Jerman/Indo)..." autocomplete="off">
-                    <button onclick="tanyaAI()">Tanya Al</button>
+                    <button onclick="tanyaAI()" class="btn-primary">Cari 🔍</button>
                 </div>
-                
-                <div id="dict-result" class="result-box">
-                    <span class="placeholder-text">Hasil terjemahan muncul di sini...</span>
-                </div>
+                <div id="dict-result" class="result-box empty-state">Hasil terjemahan akan muncul di sini.</div>
             </div>
         </section>
 
-        <!-- Halaman Flashcard -->
-        <section id="flashcard" class="page">
-            <div class="hero-card left-align">
-                <h2 style="margin-bottom: 6px;">🗂️ Kosakataku</h2>
-                <p class="subtitle" style="margin-bottom: 12px;">Daftar kata yang kamu simpan.</p>
-                <div id="flashcard-list" class="card-list" style="max-height: 380px; overflow-y: auto; padding-right: 4px;"></div>
-            </div>
-        </section>
-
-        <!-- Halaman Artikel & Berita (Hanya Judul & Tema di awal) -->
+        <!-- 4. ARTIKEL -->
         <section id="artikel" class="page">
-            
-            <!-- Tampilan Daftar Artikel (Sortir Level & Tema) -->
-            <div id="article-list-view" class="hero-card left-align">
-                <h2 style="margin-bottom: 6px;">📰 Koleksi Artikel & Cerita</h2>
-                <p class="subtitle" style="margin-bottom: 12px;">Pilih level dan baca artikel pilihan.</p>
-                
-                <div class="filter-container" style="display: flex; gap: 4px; margin-bottom: 14px; flex-wrap: wrap;">
-                    <button onclick="filterLevel('all')" class="filter-btn" style="background: #1f6feb; color: white; border: none; padding: 4px 8px; font-size: 0.65rem; border-radius: 6px; font-weight:700;">Semua</button>
-                    <button onclick="filterLevel('a1')" class="filter-btn" style="background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 4px 8px; font-size: 0.65rem; border-radius: 6px;">A1</button>
-                    <button onclick="filterLevel('a2')" class="filter-btn" style="background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 4px 8px; font-size: 0.65rem; border-radius: 6px;">A2</button>
-                    <button onclick="filterLevel('b1')" class="filter-btn" style="background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 4px 8px; font-size: 0.65rem; border-radius: 6px;">B1</button>
-                    <button onclick="filterLevel('b2')" class="filter-btn" style="background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 4px 8px; font-size: 0.65rem; border-radius: 6px;">B2</button>
-                    <button onclick="filterLevel('c1')" class="filter-btn" style="background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 4px 8px; font-size: 0.65rem; border-radius: 6px;">C1</button>
-                    <button onclick="filterLevel('c2')" class="filter-btn" style="background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 4px 8px; font-size: 0.65rem; border-radius: 6px;">C2</button>
+            <div id="article-list-view">
+                <div class="filter-container">
+                    <button onclick="filterLevel('all')" class="filter-btn active">Semua</button>
+                    <button onclick="filterLevel('a1')" class="filter-btn">A1</button>
+                    <button onclick="filterLevel('a2')" class="filter-btn">A2</button>
+                    <button onclick="filterLevel('b1')" class="filter-btn">B1</button>
+                    <button onclick="filterLevel('b2')" class="filter-btn">B2</button>
+                    <button onclick="filterLevel('c1')" class="filter-btn">C1</button>
+                    <button onclick="filterLevel('c2')" class="filter-btn">C2</button>
                 </div>
-                
-                <div id="article-list-container" class="card-list" style="max-height: 340px; overflow-y: auto; padding-right: 4px;"></div>
+                <div id="article-list-container" class="grid-list"></div>
             </div>
 
-            <!-- Tampilan Detail Artikel (Muncul setelah diklik, ada Suggestion Translation & Pop-up Kata) -->
-            <div id="article-detail-view" class="hero-card left-align" style="display: none;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <button onclick="tutupArtikel()" style="background: #21262d; border: 1px solid #30363d; color: #c9d1d9; padding: 6px 10px; font-size: 0.75rem; border-radius: 6px;">← Kembali</button>
-                    <button onclick="toggleSuggestion()" style="background: rgba(31, 111, 235, 0.2); border: 1px solid #1f6feb; color: #58a6ff; padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; font-weight: 600;">💡 Suggestion Translation</button>
+            <div id="article-detail-view" class="card main-card" style="display: none;">
+                <div class="detail-header">
+                    <button onclick="tutupArtikel()" class="btn-icon">⬅ Kembali</button>
+                    <button onclick="toggleSuggestion()" class="btn-outline">💡 Translate Paragraf</button>
                 </div>
-                
-                <div id="detail-theme" class="theme-tag">Thema</div>
-                <h3 id="detail-title" style="color: #f0f6fc; font-size: 1.15rem; margin-bottom: 12px;">Judul Artikel</h3>
-                
-                <!-- Kotak Terjemahan Utuh (Suggestion Translation) -->
-                <div id="suggestion-box" class="suggestion-box">
-                    <strong>Terjemahan Paragraf:</strong>
-                    <p id="suggestion-text" style="margin: 4px 0 0 0; color: #c9d1d9;"></p>
+                <div class="article-meta">
+                    <span id="detail-theme" class="theme-tag">Tema</span>
+                    <span id="detail-read-time" class="time-tag">⏱ 2 min</span>
                 </div>
-
-                <!-- Isi Artikel (Setiap kata bisa diklik untuk pop-up) -->
-                <div id="detail-content" style="max-height: 340px; overflow-y: auto; padding-right: 4px; font-size: 0.95rem; line-height: 1.7; margin-top: 14px;"></div>
+                <h2 id="detail-title">Judul</h2>
+                <div id="suggestion-box" class="suggestion-box"></div>
+                <div id="detail-content" class="article-body"></div>
             </div>
-
         </section>
 
-        <!-- Halaman Admin Khusus Input Artikel -->
-        <section id="admin" class="page">
-            <div class="hero-card left-align">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                    <h2 style="margin: 0;">🛠️ Admin Panel</h2>
-                    <span class="badge">Publisher</span>
+        <!-- 5. FLASHCARD -->
+        <section id="flashcard" class="page">
+            <div class="card main-card">
+                <div class="card-header">
+                    <h2>🗂️ Bank Kosakata</h2>
+                    <span id="flashcard-count" class="badge">0 Kata</span>
                 </div>
-                <p class="subtitle" style="margin-bottom: 16px;">Tambahkan artikel baru ke platform utama.</p>
+                <div id="flashcard-list" class="grid-list"></div>
+            </div>
+        </section>
+
+        <!-- 6. DONASI (Sudah dengan QRIS dan Saweria yang benar) -->
+        <section id="donasi" class="page">
+            <div class="card donation-card" style="text-align: center; border: 1px solid var(--accent); background: linear-gradient(145deg, #161b22, #1c2128);">
+                <h2 style="color: var(--accent); margin-top: 0;">Dukung Server! ☕</h2>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Traktir kopi agar platform ini bebas iklan dan server tetap hidup.</p>
                 
-                <form id="admin-form" onsubmit="tambahArtikelBaru(event)">
-                    <label style="font-size: 0.75rem; color: #8b949e; font-weight: 600;">Pilih Level CEFR:</label>
-                    <select id="admin-level" class="admin-input">
-                        <option value="a1">Level A1 (Beginner)</option>
-                        <option value="a2">Level A2 (Elementary)</option>
-                        <option value="b1">Level B1 (Intermediate)</option>
-                        <option value="b2">Level B2 (Upper-Intermediate)</option>
-                        <option value="c1">Level C1 (Advanced)</option>
-                        <option value="c2">Level C2 (Proficiency)</option>
-                    </select>
-
-                    <label style="font-size: 0.75rem; color: #8b949e; font-weight: 600;">Thema / Topik:</label>
-                    <input type="text" id="admin-theme" class="admin-input" placeholder="Contoh: Alltag, Reisen, Wirtschaft..." required style="text-align: left;">
-
-                    <label style="font-size: 0.75rem; color: #8b949e; font-weight: 600;">Judul Besar Artikel:</label>
-                    <input type="text" id="admin-title" class="admin-input" placeholder="Judul menarik dalam bahasa Jerman..." required style="text-align: left;">
-
-                    <label style="font-size: 0.75rem; color: #8b949e; font-weight: 600;">Isi Teks Artikel (Bahasa Jerman):</label>
-                    <textarea id="admin-content" class="admin-input" rows="5" placeholder="Tulis paragraf artikel bahasa Jerman di sini..." required style="text-align: left; resize: vertical;"></textarea>
-
-                    <button type="submit" style="width: 100%; background: #238636; margin-top: 6px;">Publish Artikel 🚀</button>
-                </form>
-                <p id="admin-feedback" style="margin-top: 10px; font-size: 0.85rem; text-align: center; font-weight: 600;"></p>
+                <!-- Path foto disesuaikan ke folder foto/ -->
+                <img src="foto/qrisdonasi.png" alt="QRIS Gopay" style="width: 100%; max-width: 200px; border-radius: 12px; margin-bottom: 16px; border: 2px dashed var(--accent); background: white; padding: 4px;">
+                <br>
+                <a href="https://saweria.co/LeerBroDeutsch" target="_blank" style="display: inline-block; background: var(--accent); color: var(--bg-dark); padding: 12px 24px; border-radius: 10px; font-weight: 700; text-decoration: none; margin-top: 10px;">Donate via Saweria 💸</a>
             </div>
         </section>
 
     </main>
 
-    <!-- Pop-up Terjemahan Kata/Frasa Melayang -->
-    <div id="translation-popup" class="translation-popup">
-      <span class="close-popup" onclick="closePopup()">✕</span>
-      <div id="popup-word" class="popup-word">Word</div>
-      <div id="popup-meaning" class="popup-meaning">Artinya...</div>
+    <!-- Bottom Navigation Mobile (Ditambah Menu Donasi dan bisa di-scroll kesamping) -->
+    <nav class="bottom-nav" style="overflow-x: auto; white-space: nowrap; justify-content: flex-start; gap: 25px; padding: 10px 25px;">
+        <a href="#" onclick="showPage('landing')" class="nav-item active">🏠<br>Home</a>
+        <a href="#" onclick="showPage('kuis')" class="nav-item">🎮<br>Kuis</a>
+        <a href="#" onclick="showPage('kamus')" class="nav-item">🔍<br>Kamus</a>
+        <a href="#" onclick="showPage('artikel')" class="nav-item">📚<br>Artikel</a>
+        <a href="#" onclick="showPage('flashcard')" class="nav-item">🗂️<br>Flashcard</a>
+        <a href="#" onclick="showPage('donasi')" class="nav-item">☕<br>Donasi</a>
+    </nav>
+
+    <!-- Terjemahan Pop-up -->
+    <div id="translation-popup" class="popup-modal">
+        <span class="close-popup" onclick="closePopup()">✕</span>
+        <div id="popup-word" class="popup-title">Word</div>
+        <div id="popup-meaning" class="popup-desc">Menerjemahkan...</div>
+        <div class="popup-actions">
+            <button class="btn-action audio-btn" id="btn-suara">🔊 Dengarkan</button>
+            <button class="btn-action save-btn" id="btn-simpan">💾 Simpan</button>
+        </div>
     </div>
 
-    <script src="app.js"></script>
+    <!-- Path JS sudah disesuaikan ke folder js/ -->
+    <script src="js/supabase-config.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>

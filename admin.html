@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | LeerBroDeutsch</title>
+    <!-- Path disesuaikan ke css/ -->
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="admin-body">
+
+    <div id="login-section" class="admin-login-card">
+        <h2>🔒 Admin Login</h2>
+        <input type="email" id="admin-email" placeholder="Email" class="form-input" style="margin-bottom: 10px;">
+        <input type="password" id="admin-password" placeholder="Password" class="form-input" style="margin-bottom: 15px;">
+        <button onclick="loginAdmin()" class="btn-primary w-100">Login</button>
+        <p id="login-error" class="error-text" style="color: #ff7b72; margin-top: 10px;"></p>
+    </div>
+
+    <div id="dashboard-section" style="display: none;" class="dashboard-layout">
+        <aside class="sidebar">
+            <h3>Admin Panel</h3>
+            <ul class="admin-menu" style="list-style: none; padding: 0;">
+                <li class="active" style="margin-bottom: 15px; color: var(--primary);">📝 Kelola Artikel</li>
+                <li><button onclick="logoutAdmin()" class="btn-outline w-100">Logout</button></li>
+            </ul>
+        </aside>
+        
+        <main class="admin-content">
+            <div class="card">
+                <h2>Tambah Artikel Baru</h2>
+                <form id="form-artikel" onsubmit="publishArticle(event)">
+                    <div class="form-row" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <select id="art-level" class="form-input" required>
+                            <option value="A1">A1</option><option value="A2">A2</option>
+                            <option value="B1">B1</option><option value="B2">B2</option>
+                            <option value="C1">C1</option><option value="C2">C2</option>
+                        </select>
+                        <input type="text" id="art-theme" placeholder="Tema (cth: Alltag)" class="form-input" required>
+                    </div>
+                    <input type="text" id="art-title" placeholder="Judul Artikel" class="form-input w-100" style="margin-bottom: 10px;" required>
+                    <textarea id="art-content" placeholder="Isi artikel Jerman..." rows="8" class="form-input w-100" style="margin-bottom: 10px;" required></textarea>
+                    <button type="submit" class="btn-primary" id="btn-publish">Publish ke Server 🚀</button>
+                </form>
+            </div>
+
+            <div class="card mt-2">
+                <h2>Daftar Artikel Server</h2>
+                <div id="server-articles" class="admin-list">Memuat...</div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Path disesuaikan ke js/ -->
+    <script src="js/supabase-config.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>
