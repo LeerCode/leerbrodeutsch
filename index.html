@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LeerBroDeutsch 🇩🇪</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Navigasi Bar -->
+    <nav class="navbar">
+        <div class="nav-brand">🇩🇪 <span>LeerBroDeutsch</span></div>
+        <ul class="nav-links">
+            <li><a href="#" onclick="showPage('home')" class="active">Kuis</a></li>
+            <li><a href="#" onclick="showPage('kamus')">Kamus</a></li>
+            <li><a href="#" onclick="showPage('flashcard')">Flashcard</a></li>
+            <li><a href="#" onclick="showPage('artikel')">Artikel</a></li>
+        </ul>
+    </nav>
+
+    <!-- Konten Utama -->
+    <main class="content-container">
+        
+        <!-- Halaman Kuis / Home -->
+        <section id="home" class="page active-page">
+            <div class="hero-card">
+                <div class="badge">Wortschatz Challenge</div>
+                <div id="score-badge">🔥 Skor: <span id="score">0</span></div>
+                
+                <h2 id="question-text" data-answer="">Memuat pertanyaan...</h2>
+                <p style="font-size: 0.75rem; color:#8b949e; margin-top:-10px; margin-bottom: 14px;">(Kuis diambil otomatis dari Flashcard)</p>
+                
+                <div class="input-group">
+                    <input type="text" id="user-answer" placeholder="Ketik jawaban Jerman..." autocomplete="off">
+                    <button id="submit-btn">Kirim ⚡</button>
+                </div>
+                <p id="feedback"></p>
+            </div>
+        </section>
+
+        <!-- Halaman Kamus Interaktif -->
+        <section id="kamus" class="page">
+            <div class="hero-card">
+                <div class="ai-header">
+                    <span class="ai-icon">🤖</span>
+                    <h2>AI Kamus</h2>
+                </div>
+                
+                <div class="input-group">
+                    <input type="text" id="search-dict" placeholder="Ketik kata..." autocomplete="off">
+                    <button onclick="tanyaAI()">Tanya Al</button>
+                </div>
+                
+                <div id="dict-result" class="result-box">
+                    <span class="placeholder-text">Hasil terjemahan muncul di sini...</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Halaman Flashcard -->
+        <section id="flashcard" class="page">
+            <div class="hero-card left-align">
+                <h2 style="margin-bottom: 6px;">🗂️ Kosakataku</h2>
+                <p class="subtitle" style="margin-bottom: 12px;">Daftar kata yang kamu simpan.</p>
+                <div id="flashcard-list" class="card-list" style="max-height: 380px; overflow-y: auto; padding-right: 4px;"></div>
+            </div>
+        </section>
+
+        <!-- Halaman Artikel & Berita (Sistem per kalimat) -->
+        <section id="artikel" class="page">
+            
+            <div id="article-list-view" class="hero-card left-align">
+                <h2 style="margin-bottom: 6px;">📰 Koleksi Artikel</h2>
+                <div class="filter-container" style="display: flex; gap: 3px; margin-bottom: 12px; flex-wrap: wrap;">
+                    <button onclick="filterLevel('all')" class="filter-btn" style="background: #1f6feb; color: white; border: none; padding: 4px 6px; font-size: 0.6rem; border-radius: 6px;">Semua</button>
+                    <button onclick="filterLevel('a1')" class="filter-btn" style="background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 4px 6px; font-size: 0.6rem; border-radius: 6px;">A1</button>
+                    <button onclick="filterLevel('a2')" class="filter-btn" style="background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 4px 6px; font-size: 0.6rem; border-radius: 6px;">A2</button>
+                    <button onclick="filterLevel('b1')" class="filter-btn" style="background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 4px 6px; font-size: 0.6rem; border-radius: 6px;">B1</button>
+                    <button onclick="filterLevel('b2')" class="filter-btn" style="background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 4px 6px; font-size: 0.6rem; border-radius: 6px;">B2</button>
+                    <button onclick="filterLevel('c1')" class="filter-btn" style="background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 4px 6px; font-size: 0.6rem; border-radius: 6px;">C1</button>
+                    <button onclick="filterLevel('c2')" class="filter-btn" style="background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 4px 6px; font-size: 0.6rem; border-radius: 6px;">C2</button>
+                </div>
+                <div id="article-list-container" class="card-list" style="max-height: 340px; overflow-y: auto; padding-right: 4px;"></div>
+            </div>
+
+            <div id="article-detail-view" class="hero-card left-align" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <button onclick="tutupArtikel()" style="background: #21262d; border: 1px solid #30363d; color: #c9d1d9; padding: 4px 8px; font-size: 0.7rem; border-radius: 6px;">← Kembali</button>
+                    <div style="display: flex; align-items: center; gap: 6px; font-size: 0.7rem; color: #8b949e;">
+                        <span>Translation</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggleTrans" onclick="toggleTranslation()">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+                <h3 id="detail-title" style="color: #f0f6fc; font-size: 1.05rem; margin-bottom: 12px;">Judul</h3>
+                
+                <div id="detail-content" style="max-height: 400px; overflow-y: auto; padding-right: 4px;"></div>
+            </div>
+
+        </section>
+    </main>
+
+    <script src="articles.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
