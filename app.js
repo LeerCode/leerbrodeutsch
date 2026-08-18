@@ -1,273 +1,303 @@
 // ==========================================
-// 1. NAVIGASI ANTAR HALAMAN
+// 1. DATA ARTIKEL & PENYIMPANAN LOCALSTORAGE
 // ==========================================
-function showPage(pageId) {
-    // Sembunyikan semua halaman
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
-    // Tampilkan halaman yang dituju
-    document.getElementById(pageId).classList.add('active-page');
-
-    // Atur tombol navigasi yang aktif
-    document.querySelectorAll('.nav-links a').forEach(l => l.classList.remove('active'));
-    if (event && event.target) event.target.classList.add('active');
-
-    // Refresh data jika membuka halaman tertentu
-    if (pageId === 'flashcard') loadFlashcards();
-    if (pageId === 'home') loadQuestion();
-}
-
-// ==========================================
-// 2. LOGIKA KUIS (DINAMIS DARI FLASHCARD)
-// ==========================================
-const defaultQuiz = [
-    { question: "Terjemahan ke Jerman: Kucing", answer: "katze" },
-    { question: "Terjemahan ke Jerman: Rumah", answer: "haus" },
-    { question: "Terjemahan ke Jerman: Air", answer: "wasser" }
+const defaultArticles = [
+    { id: 1, title: "Vom Bett direkt zum Unterricht?", theme: "Bildung & Alltag", level: "a1", content: "Vom Bett direkt zum Unterricht? Das ist eine interessante Frage für Deutschlerner. Viele Schüler lernen heute online." },
+    { id: 2, title: "Apfelküchle – Ein süßer Klassiker", theme: "Kultur & Essen", level: "a2", content: "Apfelküchle sind sehr lecker. Man isst sie oft in Süddeutschland mit Vanillesoße." },
+    { id: 3, title: "Die Geschichte des Geldautomaten", theme: "Technologie & Wirtschaft", level: "c2", content: "Der Geldautomat hat die Art und Weise, wie wir auf unsere Finanzen zugreifen, revolutioniert." }
 ];
-let currentQuestion = 0;
-let score = 0;
 
-function loadQuestion() {
-    const qText = document.getElementById("question-text");
-    const uAnswer = document.getElementById("user-answer");
-    const feed = document.getElementById("feedback");
+// Ambil data dari localStorage atau gunakan default
+let articlesData = JSON.parse(localStorage.getItem("leerbro_articles")) || defaultArticles;
+
+const flashcardsData = [
+    { jerman: "haus", indo: "rumah" },
+    { jerman: "hund", indo: "anjing" },
+    { jerman: "katze", indo: "kucing" },
+    { jerman: "apfel", indo: "apel" },
+    { jerman: "brot", indo: "roti" },
+    { jerman: "wasser", indo: "air" },
+    { jerman: "buch", indo: "buku" }
+];
+
+// ==========================================
+// 2. ADMIN: TAMBAH ARTIKEL BARU
+// ==========================================
+function tambahArtikelBaru(event) {
+    event.preventDefault();
+
+    const level = document.getElementById("admin-level").value;
+    const theme = document.getElementById("admin-theme").value.trim();
+    const title = document.getElementById("admin-title").value.trim();
+    const content = document.getElementById("admin-content").value.trim();
+    const feedback = document.getElementById("admin-feedback");
+
+    const artikelBaru = {
+        id: Date.now(), // ID unik berdasarkan waktu
+        title: title,
+        theme: theme,
+        level: level,
+        content: content
+    };
+
+    // Masukkan ke array dan simpan ke localStorage
+    articlesData.unshift(artikelBaru);
+    localStorage.setItem("leerbro_articles", JSON.stringify(articlesData));
+
+    feedback.innerText = "Berhasil! Artikel baru sukses dipublish ke web 🎉";
+    feedback.style.color = "#3fb950";
+
+    // Reset form
+    document.getElementById("admin-form").reset();
+
+    // Refresh daftar artikel di menu utama
+    renderArticles('all');
+
+    setTimeout(() => {
+        feedback.innerText = "";
+    }, 3000);
+}
+
+// ==========================================
+// 3. RENDER & SORTIR ARTIKEL (Hanya Judul & Tema)
+// ==========================================
+function renderArticles(filter = 'all') {
+    const container = document.getElementById("article-list-container");
+    if (!container) return;
     
-    let savedWords = JSON.parse(localStorage.getItem('mySavedWords')) || [];
-    // Gunakan kata dari flashcard jika ada minimal 2 kata, jika tidak pakai kuis bawaan
-    let dataSource = savedWords.length >= 2 ? savedWords : defaultQuiz; 
+    container.innerHTML = ""; 
+    const filteredArticles = filter === 'all' ? articlesData : articlesData.filter(art => art.level === filter);
 
-    if (currentQuestion < dataSource.length) {
-        if (savedWords.length >= 2) {
-            qText.textContent = `Apa bahasa Jermannya: "${dataSource[currentQuestion].id}"?`;
-            qText.dataset.answer = dataSource[currentQuestion].de.toLowerCase();
-        } else {
-            qText.textContent = dataSource[currentQuestion].question;
-            qText.dataset.answer = dataSource[currentQuestion].answer;
-        }
-        uAnswer.value = "";
-        feed.textContent = "";
-        uAnswer.style.display = "block";
-        document.getElementById("submit-btn").style.display = "block";
-    } else {
-        qText.textContent = "🎉 Selesai! Kamu sudah menguji semua kata.";
-        uAnswer.style.display = "none";
-        document.getElementById("submit-btn").style.display = "none";
-        currentQuestion = 0; // Reset
-    }
-}
-
-document.getElementById("submit-btn").addEventListener("click", checkAnswer);
-document.getElementById("user-answer").addEventListener("keypress", (e) => {
-    if (e.key === "Enter") checkAnswer();
-});
-
-function checkAnswer() {
-    const answer = document.getElementById("user-answer").value.trim().toLowerCase();
-    const correctAnswer = document.getElementById("question-text").dataset.answer;
-    const feed = document.getElementById("feedback");
-
-    if (answer === correctAnswer) {
-        feed.textContent = "Richtig! Mantap 🔥";
-        feed.style.color = "#3fb950";
-        score += 10;
-        document.getElementById("score").textContent = score;
-        currentQuestion++;
-        setTimeout(loadQuestion, 1200);
-    } else {
-        feed.textContent = `Falsch. (Jawaban: ${correctAnswer}) ❌`;
-        feed.style.color = "#ff7b72";
-    }
-}
-
-// ==========================================
-// 3. AI KAMUS INTERAKTIF
-// ==========================================
-let lastQueriedWord = { de: "", id: "" };
-
-async function tanyaAI() {
-    const query = document.getElementById("search-dict").value.trim();
-    const resContainer = document.getElementById("dict-result");
-
-    if (!query) return alert("Ketik kata terlebih dahulu!");
-    resContainer.innerHTML = "<span style='color: #8b949e;'>🤖 Menerjemahkan... ⏳</span>";
-
-    try {
-        const urlDe = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(query)}&langpair=de|id`;
-        const urlId = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(query)}&langpair=id|de`;
-
-        const [res1, res2] = await Promise.all([ fetch(urlDe).then(r=>r.json()), fetch(urlId).then(r=>r.json()) ]);
-        let hasilDe = res1.responseData ? res1.responseData.translatedText : "Tidak ditemukan";
-        let hasilId = res2.responseData ? res2.responseData.translatedText : "Tidak ditemukan";
-
-        let finalGerman = query.toLowerCase() === hasilDe.toLowerCase() ? hasilId : query;
-        lastQueriedWord = { de: finalGerman, id: hasilDe };
-
-        resContainer.innerHTML = `
-            <div style='font-size: 0.9rem;'>
-                <div style='background: #161b22; padding: 10px; border-radius: 8px; border: 1px solid #30363d;'>
-                    <p style='margin: 0 0 4px 0;'>🇩🇪 <strong style='color: #58a6ff;'>${finalGerman}</strong></p>
-                    <p style='margin: 0;'>🇮🇩 <strong style='color: #3fb950;'>${hasilDe}</strong></p>
-                </div>
-                <button onclick="simpanKata()" style='margin-top: 10px; width: 100%; background: #238636; color: white; border: none; padding: 8px; border-radius: 6px; font-weight: 600; cursor: pointer;'>+ Simpan ke Flashcard</button>
-            </div>
-        `;
-    } catch (e) {
-        resContainer.innerHTML = "<span style='color: #ff7b72;'>Gagal terhubung ke server terjemahan.</span>";
-    }
-}
-
-function simpanKata() {
-    let savedWords = JSON.parse(localStorage.getItem('mySavedWords')) || [];
-    if (!savedWords.some(item => item.de === lastQueriedWord.de)) {
-        savedWords.push(lastQueriedWord);
-        localStorage.setItem('mySavedWords', JSON.stringify(savedWords));
-        alert("Berhasil disimpan ke Flashcard! 🎉");
-    } else {
-        alert("Kata sudah ada di Flashcard.");
-    }
-}
-
-const searchInput = document.getElementById("search-dict");
-if (searchInput) {
-    searchInput.addEventListener("keypress", (e) => {
-        if (e.key === "Enter") tanyaAI();
-    });
-}
-
-// ==========================================
-// 4. HALAMAN FLASHCARD
-// ==========================================
-function loadFlashcards() {
-    const list = document.getElementById("flashcard-list");
-    let savedWords = JSON.parse(localStorage.getItem('mySavedWords')) || [];
-    list.innerHTML = "";
-
-    if (savedWords.length === 0) {
-        list.innerHTML = "<p style='text-align:center; color:#8b949e; font-size:0.9rem; margin-top:20px;'>Kamusmu masih kosong.<br>Cari kata dan simpan!</p>";
+    if (filteredArticles.length === 0) {
+        container.innerHTML = "<p style='color: #8b949e; font-size: 0.85rem; text-align: center; padding: 20px;'>Belum ada artikel untuk level ini.</p>";
         return;
     }
 
-    savedWords.forEach((item, index) => {
-        const card = document.createElement("div");
-        card.className = "mini-card";
-        card.style.display = "flex";
-        card.style.justifyContent = "space-between";
-        card.style.alignItems = "center";
-        card.innerHTML = `
-            <div>
-                <h3 style="color:#58a6ff; margin:0 0 4px 0; font-size:1rem;">🇩🇪 ${item.de}</h3>
-                <p style="color:#c9d1d9; margin:0; font-size:0.8rem;">🇮🇩 ${item.id}</p>
-            </div>
-            <div>
-                <button onclick="hapusFlashcard(${index})" style="background:none; border:none; font-size:1.2rem; cursor:pointer;">🗑️</button>
+    filteredArticles.forEach(art => {
+        container.innerHTML += `
+            <div class="article-card-item" onclick="bukaDetailArtikel(${art.id})">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <span class="badge" style="background:#21262d; color:#c9d1d9; border:1px solid #30363d;">${art.level.toUpperCase()}</span>
+                    <span class="theme-tag" style="margin:0;">🏷️ ${art.theme || 'General'}</span>
+                </div>
+                <h4 style="margin: 8px 0 0 0; color: #f0f6fc; font-size: 1rem;">${art.title}</h4>
             </div>
         `;
-        list.appendChild(card);
     });
 }
 
-function hapusFlashcard(index) {
-    let savedWords = JSON.parse(localStorage.getItem('mySavedWords')) || [];
-    savedWords.splice(index, 1);
-    localStorage.setItem('mySavedWords', JSON.stringify(savedWords));
-    loadFlashcards(); 
+function filterLevel(level) { 
+    renderArticles(level); 
 }
 
-// ==========================================
-// 5. RENDER ARTIKEL & SUGGESTED TRANSLATION
-// ==========================================
-window.onload = function() {
-    loadArticleList();
-    loadQuestion();
-};
+// Global variable untuk menyimpan isi artikel aktif (untuk suggestion translation)
+let activeArticleContent = "";
 
-function loadArticleList() {
-    const container = document.getElementById("article-list-container");
-    if (!container || typeof articlesData === 'undefined') return;
+function bukaDetailArtikel(id) {
+    const artikel = articlesData.find(art => art.id === id);
+    if (!artikel) return;
 
-    container.innerHTML = "";
+    document.getElementById("detail-title").innerText = artikel.title;
+    document.getElementById("detail-theme").innerText = `🏷️ ${artikel.theme || 'General'}`;
+    activeArticleContent = artikel.content; // Simpan teks asli
 
-    articlesData.forEach((art) => {
-        let borderColor = "#3fb950"; 
-        if (art.level === "a2") borderColor = "#58a6ff";
-        if (art.level === "b1") borderColor = "#ffa657";
-        if (art.level === "b2") borderColor = "#bc8cff";
-        if (art.level === "c1") borderColor = "#ff7b72";
-        if (art.level === "c2") borderColor = "#d2a8ff";
+    // Sembunyikan kotak suggestion awal
+    document.getElementById("suggestion-box").style.display = "none";
+    document.getElementById("suggestion-text").innerText = "";
+    
+    // Bungkus setiap kata agar bisa diklik untuk pop-up terjemahan
+    const words = artikel.content.split(/\s+/); 
+    const wrappedHTML = words.map(word => {
+        const cleanWordForSearch = word.replace(/[.,\/#!?$%\^&\*;:{}=\-_`~()"]/g, "").toLowerCase();
+        return `<span class="clickable-word" onclick="translateWord('${cleanWordForSearch}', '${word.replace(/'/g, "\\'")}')">${word}</span>`;
+    }).join(" ");
 
-        const card = document.createElement("div");
-        card.className = "mini-card title-card";
-        card.setAttribute("data-level", art.level);
-        card.style.cssText = `border-left: 4px solid ${borderColor}; cursor: pointer; margin-bottom: 8px;`;
-        
-        card.addEventListener("click", () => bukaArtikel(art.title, art.german, art.indo));
-
-        card.innerHTML = `
-            <span style="font-size: 0.55rem; color: ${borderColor}; font-weight: bold; text-transform: uppercase;">Level ${art.level}</span>
-            <h3 style="color: #f0f6fc; font-size: 0.9rem; margin: 2px 0;">${art.title}</h3>
-        `;
-        container.appendChild(card);
-    });
-}
-
-function bukaArtikel(judul, arrayJerman, arrayIndo) {
+    document.getElementById("detail-content").innerHTML = wrappedHTML;
     document.getElementById("article-list-view").style.display = "none";
     document.getElementById("article-detail-view").style.display = "block";
-    document.getElementById("detail-title").textContent = judul;
-    
-    // Pastikan saklar translation mati saat artikel baru dibuka
-    document.getElementById("toggleTrans").checked = false;
-
-    const contentBox = document.getElementById("detail-content");
-    contentBox.innerHTML = ""; 
-
-    // --- TAMPILAN 1: Paragraf Normal (Digabung jadi satu) ---
-    let teksUtuh = arrayJerman.join(" ");
-    let tampilanNormal = `
-        <div id="view-normal" style="display: block; border-left: 3px solid #58a6ff; padding-left: 12px; margin-bottom: 20px;">
-            <p style="font-size: 0.95rem; line-height: 1.6; color: #c9d1d9; margin-top: 0;">${teksUtuh}</p>
-        </div>
-    `;
-
-    // --- TAMPILAN 2: Terjemahan Terpisah Per Kalimat (Disembunyikan di awal) ---
-    let tampilanTerpisah = `<div id="view-translated" style="display: none;">`;
-    for (let i = 0; i < arrayJerman.length; i++) {
-        tampilanTerpisah += `
-            <div class="story-block" style="border-left: 3px solid #58a6ff; margin-bottom: 10px; padding: 10px; background: #161b22; border-radius: 8px;">
-                <p class="german-text" style="font-size: 0.9rem; color: #f0f6fc; margin: 0 0 6px 0; line-height:1.4;">${arrayJerman[i]}</p>
-                <div class="trans-box" style="font-size: 0.8rem; color: #3fb950; background: rgba(35, 134, 54, 0.1); padding: 6px; border-radius: 4px; display: block;">${arrayIndo[i]}</div>
-            </div>
-        `;
-    }
-    tampilanTerpisah += `</div>`;
-
-    // Masukkan kedua tampilan ke dalam wadah konten
-    contentBox.innerHTML = tampilanNormal + tampilanTerpisah;
-}
-
-function toggleTranslation() {
-    const isChecked = document.getElementById("toggleTrans").checked;
-    const viewNormal = document.getElementById("view-normal");
-    const viewTranslated = document.getElementById("view-translated");
-
-    if (isChecked) {
-        // Tampilkan versi terpisah per kalimat
-        viewNormal.style.display = "none";
-        viewTranslated.style.display = "block";
-    } else {
-        // Tampilkan versi paragraf utuh
-        viewNormal.style.display = "block";
-        viewTranslated.style.display = "none";
-    }
 }
 
 function tutupArtikel() {
     document.getElementById("article-detail-view").style.display = "none";
     document.getElementById("article-list-view").style.display = "block";
+    closePopup(); 
 }
 
-function filterLevel(level) {
-    document.querySelectorAll('.title-card').forEach(card => {
-        card.style.display = (level === 'all' || card.getAttribute('data-level') === level) ? "block" : "none";
+// ==========================================
+// 4. FITUR SUGGESTION TRANSLATION & POP-UP KATA (API GOOGLE)
+// ==========================================
+async function toggleSuggestion() {
+    const box = document.getElementById("suggestion-box");
+    const textEl = document.getElementById("suggestion-text");
+
+    if (box.style.display === "block") {
+        box.style.display = "none";
+        return;
+    }
+
+    box.style.display = "block";
+    textEl.innerText = "Menerjemahkan seluruh paragraf... ⏳";
+
+    try {
+        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=de&tl=id&dt=t&q=${encodeURIComponent(activeArticleContent)}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        textEl.innerText = data[0][0][0];
+    } catch (error) {
+        textEl.innerText = "Gagal memuat terjemahan otomatis.";
+    }
+}
+
+async function translateWord(searchWord, originalWord) {
+  const popup = document.getElementById("translation-popup");
+  const popupWord = document.getElementById("popup-word");
+  const popupMeaning = document.getElementById("popup-meaning");
+
+  if (!popup) return;
+
+  popupWord.innerText = originalWord; 
+  popupMeaning.innerText = "Menerjemahkan kata... ⏳";
+  popup.style.display = "block";
+
+  try {
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=de&tl=id&dt=t&q=${encodeURIComponent(searchWord)}`;
+      const response = await fetch(url);
+      const data = await response.json();
+      popupMeaning.innerText = data[0][0][0]; 
+  } catch (error) {
+      popupMeaning.innerText = "Gagal menerjemahkan (Cek internet).";
+  }
+}
+
+function closePopup() {
+  const popup = document.getElementById("translation-popup");
+  if (popup) popup.style.display = "none";
+}
+
+// ==========================================
+// 5. LOGIKA KUIS / WORTSCHATZ CHALLENGE
+// ==========================================
+let skorKuis = 0;
+let jawabanBenarKuis = "";
+
+function muatPertanyaanKuis() {
+    const questionElement = document.getElementById("question-text");
+    const answerInput = document.getElementById("user-answer");
+    const feedbackElement = document.getElementById("feedback");
+
+    if (!questionElement) return;
+
+    if (answerInput) answerInput.value = "";
+    if (feedbackElement) feedbackElement.innerText = "";
+
+    const acak = Math.floor(Math.random() * flashcardsData.length);
+    const soal = flashcardsData[acak];
+
+    questionElement.innerText = `Apa bahasa Jermannya "${soal.indo}"?`;
+    jawabanBenarKuis = soal.jerman;
+}
+
+function cekJawabanKuis() {
+    const answerInput = document.getElementById("user-answer");
+    const feedbackElement = document.getElementById("feedback");
+    const scoreElement = document.getElementById("score");
+
+    if (!answerInput || !feedbackElement) return;
+
+    const jawabanUser = answerInput.value.trim().toLowerCase();
+
+    if (jawabanUser === "") {
+        feedbackElement.innerText = "Ketik jawabanmu dulu, bro!";
+        feedbackElement.style.color = "#ffa657";
+        return;
+    }
+
+    if (jawabanUser === jawabanBenarKuis) {
+        skorKuis += 10;
+        scoreElement.innerText = skorKuis;
+        feedbackElement.innerText = "Mantap! Jawabanmu benar. 🔥";
+        feedbackElement.style.color = "#3fb950";
+        setTimeout(muatPertanyaanKuis, 1000); 
+    } else {
+        feedbackElement.innerText = `Kurang tepat. Jawaban yang benar: ${jawabanBenarKuis}`;
+        feedbackElement.style.color = "#f38ba8";
+    }
+}
+
+// ==========================================
+// 6. RENDER FLASHCARD & NAVIGASI UTAMA & KAMUS
+// ==========================================
+function renderFlashcards() {
+    const container = document.getElementById("flashcard-list");
+    if (!container) return;
+
+    container.innerHTML = ""; 
+    flashcardsData.forEach(kata => {
+        container.innerHTML += `
+            <div class="mini-card" style="display: flex; flex-direction: column; gap: 4px; padding: 12px 16px; border-left: 4px solid #89b4fa;">
+                <div style="font-weight: bold; color: #f0f6fc; font-size: 1.05rem; text-transform: capitalize;">🇩🇪 ${kata.jerman}</div>
+                <div style="color: #a6adc8; font-size: 0.85rem;">🇮🇩 ${kata.indo}</div>
+            </div>
+        `;
     });
 }
+
+function showPage(pageId) {
+    document.querySelectorAll('.page').forEach(page => page.classList.remove('active-page'));
+    const targetPage = document.getElementById(pageId);
+    if (targetPage) targetPage.classList.add('active-page');
+
+    if (window.event && window.event.target && window.event.target.tagName === 'A') {
+        document.querySelectorAll('.nav-links a').forEach(link => link.classList.remove('active'));
+        window.event.target.classList.add('active');
+    }
+}
+
+async function tanyaAI() {
+    const query = document.getElementById("search-dict").value.trim();
+    const resultBox = document.getElementById("dict-result");
+
+    if (!query) {
+        resultBox.innerHTML = "<span class='placeholder-text' style='color: #f38ba8;'>Masukkan kata terlebih dahulu!</span>";
+        return;
+    }
+
+    resultBox.innerHTML = "<span class='placeholder-text'>AI sedang mencari di internet... 🌐</span>";
+
+    try {
+        let url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=id&dt=t&q=${encodeURIComponent(query)}`;
+        let response = await fetch(url);
+        let data = await response.json();
+        let hasil = data[0][0][0];
+
+        if (hasil.toLowerCase() === query.toLowerCase()) {
+            url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=de&dt=t&q=${encodeURIComponent(query)}`;
+            response = await fetch(url);
+            data = await response.json();
+            hasil = data[0][0][0];
+        }
+
+        resultBox.innerHTML = `
+            <strong style="color: #89b4fa; font-size: 0.85rem;">Google Translate API:</strong><br><br>
+            <span style="font-size: 1.1rem; color: #3fb950;">${hasil}</span>
+        `;
+    } catch (error) {
+        resultBox.innerHTML = "<span style='color: #f38ba8;'>Gagal terhubung. Pastikan internetmu aktif!</span>";
+    }
+}
+
+// ==========================================
+// 7. INIT (SAAT APLIKASI DIBUKA)
+// ==========================================
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("LeerBroDeutsch siap dengan Admin & Fitur Lengkap!");
+    
+    renderArticles('all');
+    muatPertanyaanKuis();
+    renderFlashcards();
+    
+    const submitBtn = document.getElementById("submit-btn");
+    if (submitBtn) {
+        submitBtn.addEventListener("click", cekJawabanKuis);
+    }
+});

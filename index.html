@@ -9,7 +9,7 @@
 </head>
 <body>
 
-    <!-- Navigasi Bar -->
+    <!-- Navigasi Bar (Ditambah Menu Admin) -->
     <nav class="navbar">
         <div class="nav-brand">🇩🇪 <span>LeerBroDeutsch</span></div>
         <ul class="nav-links">
@@ -17,6 +17,7 @@
             <li><a href="#" onclick="showPage('kamus')">Kamus</a></li>
             <li><a href="#" onclick="showPage('flashcard')">Flashcard</a></li>
             <li><a href="#" onclick="showPage('artikel')">Artikel</a></li>
+            <li><a href="#" onclick="showPage('admin')">Admin <span class="admin-badge">Pro</span></a></li>
         </ul>
     </nav>
 
@@ -49,7 +50,7 @@
                 </div>
                 
                 <div class="input-group">
-                    <input type="text" id="search-dict" placeholder="Ketik kata..." autocomplete="off">
+                    <input type="text" id="search-dict" placeholder="Ketik kata (Jerman/Indo)..." autocomplete="off">
                     <button onclick="tanyaAI()">Tanya Al</button>
                 </div>
                 
@@ -68,43 +69,93 @@
             </div>
         </section>
 
-        <!-- Halaman Artikel & Berita (Sistem per kalimat) -->
+        <!-- Halaman Artikel & Berita (Hanya Judul & Tema di awal) -->
         <section id="artikel" class="page">
             
+            <!-- Tampilan Daftar Artikel (Sortir Level & Tema) -->
             <div id="article-list-view" class="hero-card left-align">
-                <h2 style="margin-bottom: 6px;">📰 Koleksi Artikel</h2>
-                <div class="filter-container" style="display: flex; gap: 3px; margin-bottom: 12px; flex-wrap: wrap;">
-                    <button onclick="filterLevel('all')" class="filter-btn" style="background: #1f6feb; color: white; border: none; padding: 4px 6px; font-size: 0.6rem; border-radius: 6px;">Semua</button>
-                    <button onclick="filterLevel('a1')" class="filter-btn" style="background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 4px 6px; font-size: 0.6rem; border-radius: 6px;">A1</button>
-                    <button onclick="filterLevel('a2')" class="filter-btn" style="background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 4px 6px; font-size: 0.6rem; border-radius: 6px;">A2</button>
-                    <button onclick="filterLevel('b1')" class="filter-btn" style="background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 4px 6px; font-size: 0.6rem; border-radius: 6px;">B1</button>
-                    <button onclick="filterLevel('b2')" class="filter-btn" style="background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 4px 6px; font-size: 0.6rem; border-radius: 6px;">B2</button>
-                    <button onclick="filterLevel('c1')" class="filter-btn" style="background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 4px 6px; font-size: 0.6rem; border-radius: 6px;">C1</button>
-                    <button onclick="filterLevel('c2')" class="filter-btn" style="background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 4px 6px; font-size: 0.6rem; border-radius: 6px;">C2</button>
+                <h2 style="margin-bottom: 6px;">📰 Koleksi Artikel & Cerita</h2>
+                <p class="subtitle" style="margin-bottom: 12px;">Pilih level dan baca artikel pilihan.</p>
+                
+                <div class="filter-container" style="display: flex; gap: 4px; margin-bottom: 14px; flex-wrap: wrap;">
+                    <button onclick="filterLevel('all')" class="filter-btn" style="background: #1f6feb; color: white; border: none; padding: 4px 8px; font-size: 0.65rem; border-radius: 6px; font-weight:700;">Semua</button>
+                    <button onclick="filterLevel('a1')" class="filter-btn" style="background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 4px 8px; font-size: 0.65rem; border-radius: 6px;">A1</button>
+                    <button onclick="filterLevel('a2')" class="filter-btn" style="background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 4px 8px; font-size: 0.65rem; border-radius: 6px;">A2</button>
+                    <button onclick="filterLevel('b1')" class="filter-btn" style="background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 4px 8px; font-size: 0.65rem; border-radius: 6px;">B1</button>
+                    <button onclick="filterLevel('b2')" class="filter-btn" style="background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 4px 8px; font-size: 0.65rem; border-radius: 6px;">B2</button>
+                    <button onclick="filterLevel('c1')" class="filter-btn" style="background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 4px 8px; font-size: 0.65rem; border-radius: 6px;">C1</button>
+                    <button onclick="filterLevel('c2')" class="filter-btn" style="background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 4px 8px; font-size: 0.65rem; border-radius: 6px;">C2</button>
                 </div>
+                
                 <div id="article-list-container" class="card-list" style="max-height: 340px; overflow-y: auto; padding-right: 4px;"></div>
             </div>
 
+            <!-- Tampilan Detail Artikel (Muncul setelah diklik, ada Suggestion Translation & Pop-up Kata) -->
             <div id="article-detail-view" class="hero-card left-align" style="display: none;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <button onclick="tutupArtikel()" style="background: #21262d; border: 1px solid #30363d; color: #c9d1d9; padding: 4px 8px; font-size: 0.7rem; border-radius: 6px;">← Kembali</button>
-                    <div style="display: flex; align-items: center; gap: 6px; font-size: 0.7rem; color: #8b949e;">
-                        <span>Translation</span>
-                        <label class="switch">
-                            <input type="checkbox" id="toggleTrans" onclick="toggleTranslation()">
-                            <span class="slider round"></span>
-                        </label>
-                    </div>
+                    <button onclick="tutupArtikel()" style="background: #21262d; border: 1px solid #30363d; color: #c9d1d9; padding: 6px 10px; font-size: 0.75rem; border-radius: 6px;">← Kembali</button>
+                    <button onclick="toggleSuggestion()" style="background: rgba(31, 111, 235, 0.2); border: 1px solid #1f6feb; color: #58a6ff; padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; font-weight: 600;">💡 Suggestion Translation</button>
                 </div>
-                <h3 id="detail-title" style="color: #f0f6fc; font-size: 1.05rem; margin-bottom: 12px;">Judul</h3>
                 
-                <div id="detail-content" style="max-height: 400px; overflow-y: auto; padding-right: 4px;"></div>
+                <div id="detail-theme" class="theme-tag">Thema</div>
+                <h3 id="detail-title" style="color: #f0f6fc; font-size: 1.15rem; margin-bottom: 12px;">Judul Artikel</h3>
+                
+                <!-- Kotak Terjemahan Utuh (Suggestion Translation) -->
+                <div id="suggestion-box" class="suggestion-box">
+                    <strong>Terjemahan Paragraf:</strong>
+                    <p id="suggestion-text" style="margin: 4px 0 0 0; color: #c9d1d9;"></p>
+                </div>
+
+                <!-- Isi Artikel (Setiap kata bisa diklik untuk pop-up) -->
+                <div id="detail-content" style="max-height: 340px; overflow-y: auto; padding-right: 4px; font-size: 0.95rem; line-height: 1.7; margin-top: 14px;"></div>
             </div>
 
         </section>
+
+        <!-- Halaman Admin Khusus Input Artikel -->
+        <section id="admin" class="page">
+            <div class="hero-card left-align">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                    <h2 style="margin: 0;">🛠️ Admin Panel</h2>
+                    <span class="badge">Publisher</span>
+                </div>
+                <p class="subtitle" style="margin-bottom: 16px;">Tambahkan artikel baru ke platform utama.</p>
+                
+                <form id="admin-form" onsubmit="tambahArtikelBaru(event)">
+                    <label style="font-size: 0.75rem; color: #8b949e; font-weight: 600;">Pilih Level CEFR:</label>
+                    <select id="admin-level" class="admin-input">
+                        <option value="a1">Level A1 (Beginner)</option>
+                        <option value="a2">Level A2 (Elementary)</option>
+                        <option value="b1">Level B1 (Intermediate)</option>
+                        <option value="b2">Level B2 (Upper-Intermediate)</option>
+                        <option value="c1">Level C1 (Advanced)</option>
+                        <option value="c2">Level C2 (Proficiency)</option>
+                    </select>
+
+                    <label style="font-size: 0.75rem; color: #8b949e; font-weight: 600;">Thema / Topik:</label>
+                    <input type="text" id="admin-theme" class="admin-input" placeholder="Contoh: Alltag, Reisen, Wirtschaft..." required style="text-align: left;">
+
+                    <label style="font-size: 0.75rem; color: #8b949e; font-weight: 600;">Judul Besar Artikel:</label>
+                    <input type="text" id="admin-title" class="admin-input" placeholder="Judul menarik dalam bahasa Jerman..." required style="text-align: left;">
+
+                    <label style="font-size: 0.75rem; color: #8b949e; font-weight: 600;">Isi Teks Artikel (Bahasa Jerman):</label>
+                    <textarea id="admin-content" class="admin-input" rows="5" placeholder="Tulis paragraf artikel bahasa Jerman di sini..." required style="text-align: left; resize: vertical;"></textarea>
+
+                    <button type="submit" style="width: 100%; background: #238636; margin-top: 6px;">Publish Artikel 🚀</button>
+                </form>
+                <p id="admin-feedback" style="margin-top: 10px; font-size: 0.85rem; text-align: center; font-weight: 600;"></p>
+            </div>
+        </section>
+
     </main>
 
-    <script src="articles.js"></script>
+    <!-- Pop-up Terjemahan Kata/Frasa Melayang -->
+    <div id="translation-popup" class="translation-popup">
+      <span class="close-popup" onclick="closePopup()">✕</span>
+      <div id="popup-word" class="popup-word">Word</div>
+      <div id="popup-meaning" class="popup-meaning">Artinya...</div>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>
