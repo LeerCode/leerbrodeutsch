@@ -48,7 +48,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     muatPertanyaanKuis();
     updateDashboardStats();
     
-    document.getElementById("submit-btn")?.addEventListener("click", cekJawabanKuis);
+    const submitBtn = document.getElementById("submit-btn");
+    if (submitBtn) submitBtn.addEventListener("click", cekJawabanKuis);
 });
 
 // ==========================================
@@ -60,16 +61,17 @@ function addXP(amount) {
     updateUserUI();
     
     const toast = document.getElementById('xp-toast');
-    toast.innerText = `+${amount} XP ✨`;
-    toast.classList.remove('show');
-    void toast.offsetWidth; // trigger reflow
-    toast.classList.add('show');
+    if(toast) {
+        toast.innerText = `+${amount} XP ✨`;
+        toast.classList.remove('show');
+        void toast.offsetWidth; // trigger reflow
+        toast.classList.add('show');
+    }
 }
 
 function checkStreak() {
     const today = new Date().toDateString();
     if (userData.lastActive !== today) {
-        // Cek apakah kemarin aktif, jika tidak reset streak
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
         if (userData.lastActive !== yesterday.toDateString() && userData.lastActive !== '') {
@@ -78,7 +80,7 @@ function checkStreak() {
         if(userData.lastActive !== '') {
            userData.streak += 1;
         } else {
-           userData.streak = 1; // First time
+           userData.streak = 1; 
         }
         userData.lastActive = today;
         saveUser();
@@ -91,18 +93,26 @@ function saveUser() {
 }
 
 function updateUserUI() {
-    document.getElementById('nav-xp').innerText = userData.xp;
-    document.getElementById('nav-streak').innerText = userData.streak;
-    document.getElementById('prof-xp').innerText = userData.xp;
-    document.getElementById('prof-streak').innerText = userData.streak;
+    const navXp = document.getElementById('nav-xp');
+    const navStreak = document.getElementById('nav-streak');
+    const profXp = document.getElementById('prof-xp');
+    const profStreak = document.getElementById('prof-streak');
+    
+    if(navXp) navXp.innerText = userData.xp;
+    if(navStreak) navStreak.innerText = userData.streak;
+    if(profXp) profXp.innerText = userData.xp;
+    if(profStreak) profStreak.innerText = userData.streak;
 }
 
 function updateDashboardStats() {
-    document.getElementById('dash-words').innerText = flashcardsData.length;
-    document.getElementById('dash-articles').innerText = userData.articlesRead || 0;
-    document.getElementById('dash-grammar').innerText = userData.grammarDone || 0;
+    const dashWords = document.getElementById('dash-words');
+    const dashArticles = document.getElementById('dash-articles');
+    const dashGrammar = document.getElementById('dash-grammar');
     
-    // Fake Progress Bar update (berdasarkan aktivitas)
+    if(dashWords) dashWords.innerText = flashcardsData.length;
+    if(dashArticles) dashArticles.innerText = userData.articlesRead || 0;
+    if(dashGrammar) dashGrammar.innerText = userData.grammarDone || 0;
+    
     const setRing = (sel, val) => {
         const el = document.querySelector(sel);
         if(el) { el.innerText = `${Math.min(val, 100)}%`; el.style.background = `conic-gradient(var(--primary) ${Math.min(val, 100)}%, transparent 0)`; }
@@ -116,7 +126,8 @@ function updateDashboardStats() {
 // ==========================================
 function showPage(pageId) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
-    document.getElementById(pageId).classList.add('active-page');
+    const targetPage = document.getElementById(pageId);
+    if(targetPage) targetPage.classList.add('active-page');
     
     if (window.event && window.event.currentTarget && window.event.currentTarget.classList.contains('nav-item')) {
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -129,8 +140,11 @@ function switchWortschatzTab(tabName) {
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active-tab'));
     
-    document.getElementById(`tab-${tabName}`).classList.add('active');
-    document.getElementById(`w-${tabName}`).classList.add('active-tab');
+    const targetTabBtn = document.getElementById(`tab-${tabName}`);
+    const targetTabContent = document.getElementById(`w-${tabName}`);
+    
+    if(targetTabBtn) targetTabBtn.classList.add('active');
+    if(targetTabContent) targetTabContent.classList.add('active-tab');
 }
 
 // ==========================================
@@ -138,7 +152,10 @@ function switchWortschatzTab(tabName) {
 // ==========================================
 function filterGrammar(level) {
     if (window.event && window.event.target && window.event.target.classList.contains('filter-btn')) {
-        document.querySelector('#lernen .filter-container').querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        const filterContainer = document.querySelector('#lernen .filter-container');
+        if(filterContainer) {
+            filterContainer.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        }
         window.event.target.classList.add('active');
     }
     renderGrammar(level);
@@ -146,6 +163,7 @@ function filterGrammar(level) {
 
 function renderGrammar(levelFilter) {
     const container = document.getElementById("grammar-list");
+    if(!container) return;
     container.innerHTML = "";
     
     const filtered = levelFilter === 'all' ? grammarLessons : grammarLessons.filter(g => g.level.toUpperCase() === levelFilter.toUpperCase());
@@ -168,8 +186,12 @@ function bukaGrammar(id) {
     const g = grammarLessons.find(x => x.id === id);
     if (!g) return;
     
-    document.getElementById('g-level').className = `level-badge ${g.level.toLowerCase()}`;
-    document.getElementById('g-level').innerText = g.level;
+    const gLevel = document.getElementById('g-level');
+    if(gLevel) {
+        gLevel.className = `level-badge ${g.level.toLowerCase()}`;
+        gLevel.innerText = g.level;
+    }
+    
     document.getElementById('g-title').innerText = g.title;
     document.getElementById('g-explanation').innerText = g.explanation;
     document.getElementById('g-merke').innerText = g.merke;
@@ -188,7 +210,8 @@ function bukaGrammar(id) {
     });
     
     document.getElementById("grammar-list").style.display = "none";
-    document.querySelector("#lernen .filter-container").style.display = "none";
+    const filterContainer = document.querySelector("#lernen .filter-container");
+    if(filterContainer) filterContainer.style.display = "none";
     document.getElementById("grammar-detail").style.display = "block";
 }
 
@@ -212,17 +235,21 @@ function cekGrammar(btn, selected, correct) {
 function tutupGrammar() {
     document.getElementById("grammar-detail").style.display = "none";
     document.getElementById("grammar-list").style.display = "grid";
-    document.querySelector("#lernen .filter-container").style.display = "flex";
+    const filterContainer = document.querySelector("#lernen .filter-container");
+    if(filterContainer) filterContainer.style.display = "flex";
 }
 
 // ==========================================
-// 6. ARTIKEL & TERJEMAHAN PER KALIMAT (NEW!)
+// 6. ARTIKEL & TERJEMAHAN PER KALIMAT
 // ==========================================
 let currentArticleRaw = "";
 
 function filterLevel(level) {
     if (window.event && window.event.target && window.event.target.classList.contains('filter-btn')) {
-        document.querySelector('#lesen .filter-container').querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        const filterContainer = document.querySelector('#lesen .filter-container');
+        if(filterContainer) {
+            filterContainer.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        }
         window.event.target.classList.add('active');
     }
     renderArticles(level);
@@ -230,6 +257,7 @@ function filterLevel(level) {
 
 function renderArticles(levelFilter) {
     const container = document.getElementById("article-list-container");
+    if(!container) return;
     container.innerHTML = "";
     const filtered = levelFilter === 'all' ? articlesData : articlesData.filter(a => a.level.toUpperCase() === levelFilter.toUpperCase());
     
@@ -255,38 +283,41 @@ function bukaDetailArtikel(id) {
     const art = articlesData.find(a => a.id == id);
     if (!art) return;
 
-    currentArticleRaw = art.content; // Simpan aslinya
-    document.getElementById("detail-level").className = `level-badge ${art.level.toLowerCase()}`;
-    document.getElementById("detail-level").innerText = art.level;
+    currentArticleRaw = art.content; 
+    
+    const detailLevel = document.getElementById("detail-level");
+    if(detailLevel) {
+        detailLevel.className = `level-badge ${art.level.toLowerCase()}`;
+        detailLevel.innerText = art.level;
+    }
+    
     document.getElementById("detail-theme").innerText = art.theme;
     document.getElementById("detail-title").innerText = art.title;
     
-    // Hubungkan dengan Grammar berdasarkan level (Simulasi Dummy)
     const gLink = document.getElementById("article-grammar-link");
     const matchedG = grammarLessons.find(g => g.level.toUpperCase() === art.level.toUpperCase());
-    if (matchedG) {
+    if (matchedG && gLink) {
         gLink.style.display = "flex";
         document.getElementById("hint-g-title").innerText = matchedG.title;
         gLink.onclick = () => { showPage('lernen'); bukaGrammar(matchedG.id); };
-    } else { gLink.style.display = "none"; }
+    } else if(gLink) { 
+        gLink.style.display = "none"; 
+    }
 
-    // Render Kata per Kata (Klikable)
     renderKalimatJerman(currentArticleRaw);
     
-    // Reset Toggle Terjemahan
-    document.getElementById('translate-toggle').checked = false;
+    const toggle = document.getElementById('translate-toggle');
+    if(toggle) toggle.checked = false;
     
     document.getElementById("article-list-view").style.display = "none";
     document.getElementById("article-detail-view").style.display = "block";
     
-    // Beri XP karena membaca
     addXP(5);
     userData.articlesRead = (userData.articlesRead || 0) + 1; saveUser();
 }
 
 function renderKalimatJerman(text) {
     const container = document.getElementById("detail-content");
-    // Pisahkan kalimat berdasarkan tanda baca
     const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
     
     let html = "";
@@ -303,43 +334,49 @@ function renderKalimatJerman(text) {
             </div>
         `;
     });
-    container.innerHTML = html;
+    if(container) container.innerHTML = html;
 }
 
 async function toggleTranslation(checkbox) {
     const pairs = document.querySelectorAll('.translation-pair');
     
     if (!checkbox.checked) {
-        // Matikan terjemahan (slide-up / hide)
-        pairs.forEach(p => { p.querySelector('.id-text').style.display = 'none'; });
+        pairs.forEach(p => { 
+            const idText = p.querySelector('.id-text');
+            if(idText) idText.style.display = 'none'; 
+        });
         return;
     }
 
-    // Tampilkan Loading
     pairs.forEach(p => { 
         const idText = p.querySelector('.id-text');
-        idText.style.display = 'block';
-        if(idText.innerText === "") idText.innerHTML = "<em>Menerjemahkan... ⏳</em>"; 
+        if(idText) {
+            idText.style.display = 'block';
+            if(idText.innerText === "") idText.innerHTML = "<em>Menerjemahkan... ⏳</em>"; 
+        }
     });
 
     try {
-        // Fetch translate dari API Google untuk SELURUH TEXT
         const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=de&tl=id&dt=t&q=${encodeURIComponent(currentArticleRaw)}`);
         const data = await res.json();
         
-        // Google API mengembalikan array segment di data[0] (segment[0] = Indo, segment[1] = Jerman asli)
-        // Kita petakan ke div kita
         let segmentIndex = 0;
         pairs.forEach((p, idx) => {
-            if(data[0] && data[0][segmentIndex]) {
-                 p.querySelector('.id-text').innerText = "🇮🇩 " + data[0][segmentIndex][0];
-                 segmentIndex++;
-            } else {
-                 p.querySelector('.id-text').innerText = "Gagal memetakan terjemahan.";
+            const idText = p.querySelector('.id-text');
+            if(idText) {
+                if(data[0] && data[0][segmentIndex]) {
+                     idText.innerText = "🇮🇩 " + data[0][segmentIndex][0];
+                     segmentIndex++;
+                } else {
+                     idText.innerText = "Gagal memetakan terjemahan.";
+                }
             }
         });
     } catch(e) {
-        pairs.forEach(p => p.querySelector('.id-text').innerText = "Koneksi terjemahan gagal.");
+        pairs.forEach(p => {
+            const idText = p.querySelector('.id-text');
+            if(idText) idText.innerText = "Koneksi terjemahan gagal.";
+        });
     }
 }
 
@@ -354,6 +391,8 @@ function tutupArtikel() {
 // ==========================================
 async function bukaPopup(searchWord, original) {
     const popup = document.getElementById("translation-popup");
+    if(!popup) return;
+    
     document.getElementById("popup-word").innerText = original;
     document.getElementById("popup-meaning").innerText = "Mencari...";
     popup.style.display = "block";
@@ -371,10 +410,12 @@ async function bukaPopup(searchWord, original) {
             muatPertanyaanKuis();
             
             const btnSimpan = document.getElementById("btn-simpan");
-            btnSimpan.innerText = "Tersimpan ✔";
-            btnSimpan.style.background = "var(--success)";
-            addXP(2); // XP simpan kata
-            setTimeout(() => { btnSimpan.innerText = "💾 Speichern"; btnSimpan.style.background = "var(--success)"; }, 2000);
+            if(btnSimpan) {
+                btnSimpan.innerText = "Tersimpan ✔";
+                btnSimpan.style.background = "var(--success)";
+                addXP(2); 
+                setTimeout(() => { btnSimpan.innerText = "💾 Speichern"; btnSimpan.style.background = "var(--success)"; }, 2000);
+            }
         }
     };
 
@@ -385,8 +426,12 @@ async function bukaPopup(searchWord, original) {
     } catch(e) { document.getElementById("popup-meaning").innerText = "Gagal menerjemahkan."; }
 }
 
-function closePopup() { document.getElementById("translation-popup").style.display = "none"; }
+function closePopup() { 
+    const popup = document.getElementById("translation-popup");
+    if(popup) popup.style.display = "none"; 
+}
 
+// ==========================================
 // ==========================================
 // 8. WORTSCHATZ (KUIS, FLASHCARD, KAMUS)
 // ==========================================
@@ -395,8 +440,12 @@ function renderFlashcards() {
     if (!container) return;
     
     container.innerHTML = "";
-    document.getElementById("flashcard-count").innerText = `${flashcardsData.length} Wörter gespeichert`;
-    document.getElementById("dash-words").innerText = flashcardsData.length; // Update Dashboard
+    
+    const countEl = document.getElementById("flashcard-count");
+    if(countEl) countEl.innerText = `${flashcardsData.length} Wörter gespeichert`;
+    
+    const dashWordsEl = document.getElementById("dash-words");
+    if(dashWordsEl) dashWordsEl.innerText = flashcardsData.length; 
 
     if (flashcardsData.length === 0) {
         container.innerHTML = `<div class="empty-state-container">🧠<br>Kosakatamu masih kosong. Klik kata di artikel untuk menyimpan.</div>`;
@@ -432,15 +481,18 @@ function cekJawabanKuis() {
     const answer = document.getElementById("user-answer").value.trim().toLowerCase();
     const correct = currentQuizWord.jerman.toLowerCase().replace(/[.,!?]/g, "");
 
-    if (answer === "") { document.getElementById("feedback").innerHTML = "<span style='color:var(--accent)'>Ketik jawaban dulu!</span>"; return; }
+    const fb = document.getElementById("feedback");
+    if (!fb) return;
+
+    if (answer === "") { fb.innerHTML = "<span style='color:var(--accent)'>Ketik jawaban dulu!</span>"; return; }
 
     if (answer === correct) {
-        document.getElementById("feedback").innerHTML = "<span style='color:var(--success)'>🎉 Richtig!</span>";
+        fb.innerHTML = "<span style='color:var(--success)'>🎉 Richtig!</span>";
         ucapkanKata(currentQuizWord.jerman); 
         addXP(10);
         setTimeout(muatPertanyaanKuis, 1200);
     } else {
-        document.getElementById("feedback").innerHTML = `<span style='color:#ff7b72'>❌ Falsch. Jawaban: <b>${currentQuizWord.jerman}</b></span>`;
+        fb.innerHTML = `<span style='color:#ff7b72'>❌ Falsch. Jawaban: <b>${currentQuizWord.jerman}</b></span>`;
     }
 }
 
@@ -448,6 +500,8 @@ async function tanyaAI() {
     const q = document.getElementById("search-dict").value.trim();
     if(!q) return;
     const resBox = document.getElementById("dict-result");
+    if(!resBox) return;
+    
     resBox.innerHTML = "<span class='text-muted'>Menerjemahkan... ⏳</span>";
 
     try {
@@ -476,3 +530,4 @@ function ucapkanKata(kata) {
         utterance.lang = 'de-DE'; utterance.rate = 0.9;
         window.speechSynthesis.speak(utterance);
     }
+}
