@@ -4,56 +4,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard | LeerBroDeutsch</title>
-    <!-- Path disesuaikan ke css/ -->
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="admin-body">
+<div class="content-container mt-4">
 
-    <div id="login-section" class="admin-login-card">
-        <h2>🔒 Admin Login</h2>
-        <input type="email" id="admin-email" placeholder="Email" class="form-input" style="margin-bottom: 10px;">
-        <input type="password" id="admin-password" placeholder="Password" class="form-input" style="margin-bottom: 15px;">
-        <button onclick="loginAdmin()" class="btn-primary w-100">Login</button>
-        <p id="login-error" class="error-text" style="color: #ff7b72; margin-top: 10px;"></p>
+    <!-- Login -->
+    <div id="login-section" class="glass-card" style="max-width: 400px; margin: auto;">
+        <h2 class="text-center mb-3">🔒 Admin Login</h2>
+        <div class="input-group mb-2">
+            <input type="email" id="admin-email" placeholder="Email Admin">
+        </div>
+        <div class="input-group mb-3">
+            <input type="password" id="admin-password" placeholder="Password">
+        </div>
+        <button onclick="loginAdmin()" class="btn-primary">Login</button>
+        <p id="login-error" class="text-center mt-2" style="color: #ff7b72;"></p>
+        <div class="text-center mt-3"><a href="index.html" class="text-muted text-sm">Kembali ke Home</a></div>
     </div>
 
-    <div id="dashboard-section" style="display: none;" class="dashboard-layout">
-        <aside class="sidebar">
-            <h3>Admin Panel</h3>
-            <ul class="admin-menu" style="list-style: none; padding: 0;">
-                <li class="active" style="margin-bottom: 15px; color: var(--primary);">📝 Kelola Artikel</li>
-                <li><button onclick="logoutAdmin()" class="btn-outline w-100">Logout</button></li>
-            </ul>
-        </aside>
+    <!-- Dashboard -->
+    <div id="dashboard-section" style="display: none;">
+        <div class="flex-between mb-3">
+            <h2>Admin Panel 🛠️</h2>
+            <button onclick="logoutAdmin()" class="btn-outline">Logout</button>
+        </div>
         
-        <main class="admin-content">
-            <div class="card">
-                <h2>Tambah Artikel Baru</h2>
-                <form id="form-artikel" onsubmit="publishArticle(event)">
-                    <div class="form-row" style="display: flex; gap: 10px; margin-bottom: 10px;">
-                        <select id="art-level" class="form-input" required>
-                            <option value="A1">A1</option><option value="A2">A2</option>
-                            <option value="B1">B1</option><option value="B2">B2</option>
-                            <option value="C1">C1</option><option value="C2">C2</option>
-                        </select>
-                        <input type="text" id="art-theme" placeholder="Tema (cth: Alltag)" class="form-input" required>
-                    </div>
-                    <input type="text" id="art-title" placeholder="Judul Artikel" class="form-input w-100" style="margin-bottom: 10px;" required>
-                    <textarea id="art-content" placeholder="Isi artikel Jerman..." rows="8" class="form-input w-100" style="margin-bottom: 10px;" required></textarea>
-                    <button type="submit" class="btn-primary" id="btn-publish">Publish ke Server 🚀</button>
-                </form>
-            </div>
+        <div class="glass-card mb-3">
+            <h3 class="mb-3">Tambah Artikel Server</h3>
+            <form id="form-artikel" onsubmit="publishArticle(event)">
+                <div class="grid-2 mb-2">
+                    <select id="art-level" class="btn-outline" required style="width:100%; text-align:left; background: rgba(0,0,0,0.2);">
+                        <option value="A1">A1</option><option value="A2">A2</option>
+                        <option value="B1">B1</option>
+                    </select>
+                    <input type="text" id="art-theme" placeholder="Tema (cth: Alltag)" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: white; border-radius:10px; padding:8px 16px;" required>
+                </div>
+                <input type="text" id="art-title" placeholder="Judul Artikel" style="width:100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: white; border-radius:10px; padding:12px 16px; margin-bottom:10px;" required>
+                <textarea id="art-content" placeholder="Isi artikel Jerman (Jangan pakai HTML)..." rows="6" style="width:100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: white; border-radius:10px; padding:12px 16px; margin-bottom:10px;" required></textarea>
+                <button type="submit" class="btn-primary" id="btn-publish">Publish 🚀</button>
+            </form>
+        </div>
 
-            <div class="card mt-2">
-                <h2>Daftar Artikel Server</h2>
-                <div id="server-articles" class="admin-list">Memuat...</div>
-            </div>
-        </main>
+        <div class="glass-card">
+            <h3 class="mb-3">Daftar Artikel (Live Server)</h3>
+            <div id="server-articles">Memuat...</div>
+        </div>
     </div>
+</div>
 
-    <!-- Path disesuaikan ke js/ -->
-    <script src="js/supabase-config.js"></script>
-    <script src="js/admin.js"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/admin.js"></script>
 </body>
 </html>

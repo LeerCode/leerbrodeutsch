@@ -3,155 +3,248 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LeerBroDeutsch 🇩🇪 | Platform Belajar Jerman</title>
-    <!-- Path CSS sudah disesuaikan ke folder css/ -->
+    <title>LeerBroDeutsch 🇩🇪 | Belajar Jerman</title>
     <link rel="stylesheet" href="css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-    <!-- Header Desktop / Mobile Top -->
-    <header class="top-header">
-        <div class="nav-brand">
-            <!-- PINTU RAHASIA ADMIN: Klik logo ini untuk buka halaman admin -->
-            <a href="admin.html" style="text-decoration: none; color: inherit;">
-                🇩🇪 <span>LeerBroDeutsch</span>
-            </a>
-        </div>
-        <div class="header-stats" id="global-stats">Memuat data...</div>
-    </header>
+<!-- Header Top -->
+<header class="top-header glass-effect">
+    <div class="nav-brand">
+        <a href="admin.html" style="text-decoration: none; color: inherit;">
+            🇩🇪 <span>LeerBroDeutsch</span>
+        </a>
+    </div>
+    <div class="header-stats">
+        <span class="streak-pill">🔥 <span id="nav-streak">0</span></span>
+        <span class="xp-pill">⭐ <span id="nav-xp">0</span> XP</span>
+    </div>
+</header>
 
-    <main class="content-container">
-        
-        <!-- 1. LANDING PAGE -->
-        <section id="landing" class="page active-page">
-            <div class="hero-section">
-                <h1>Kuasai Bahasa Jerman Lebih Cepat.</h1>
-                <p>Platform interaktif untuk memperkaya Wortschatz, dari level A1 hingga C2.</p>
-                <div class="hero-cta">
-                    <button onclick="showPage('kuis')" class="btn-primary">Mulai Latihan 🚀</button>
-                    <button onclick="showPage('artikel')" class="btn-secondary">Baca Artikel 📚</button>
+<main class="content-container">
+    
+    <!-- 1. HOME / DASHBOARD -->
+    <section id="dashboard" class="page active-page">
+        <div class="hero-card glass-card">
+            <h1 class="hero-title">Bereit, Deutsch zu lernen? 🚀</h1>
+            <p class="hero-subtitle">Jeden Tag ein bisschen besser. Mach weiter so!</p>
+            <div class="hero-stats">
+                <div><h3 id="dash-words">0</h3><p>Wörter</p></div>
+                <div><h3 id="dash-articles">0</h3><p>Artikel</p></div>
+                <div><h3 id="dash-grammar">0</h3><p>Lektionen</p></div>
+            </div>
+        </div>
+
+        <h3 class="section-title">Dein Lernweg</h3>
+        <div class="learning-path">
+            <div class="path-card" onclick="showPage('lernen'); filterGrammar('A1')">
+                <div class="path-info">
+                    <span class="level-badge a1">A1</span>
+                    <h4>Grundlagen</h4>
+                    <p>Dasar bahasa & perkenalan.</p>
                 </div>
+                <div class="progress-ring">0%</div>
+            </div>
+            <div class="path-card" onclick="showPage('lernen'); filterGrammar('A2')">
+                <div class="path-info">
+                    <span class="level-badge a2">A2</span>
+                    <h4>Alltag & Kommunikation</h4>
+                    <p>Percakapan sehari-hari.</p>
+                </div>
+                <div class="progress-ring">0%</div>
+            </div>
+            <div class="path-card" onclick="showPage('lernen'); filterGrammar('B1')">
+                <div class="path-info">
+                    <span class="level-badge b1">B1</span>
+                    <h4>Selbstständig sprechen</h4>
+                    <p>Berpendapat & cerita.</p>
+                </div>
+                <div class="progress-ring">0%</div>
+            </div>
+        </div>
+
+        <h3 class="section-title">Quick Practice</h3>
+        <div class="quick-actions grid-2">
+            <button class="btn-glass" onclick="showPage('wortschatz')">🧠 Vokabeln</button>
+            <button class="btn-glass" onclick="showPage('lesen')">📖 Lesen</button>
+        </div>
+    </section>
+
+    <!-- 2. LERNEN (GRAMMATIK) -->
+    <section id="lernen" class="page">
+        <div class="page-header">
+            <h2>Grammatik 📚</h2>
+            <p>Pilih level dan mulai pelajaranmu.</p>
+        </div>
+        <div class="filter-container">
+            <button onclick="filterGrammar('all')" class="filter-btn active">Semua</button>
+            <button onclick="filterGrammar('A1')" class="filter-btn">A1</button>
+            <button onclick="filterGrammar('A2')" class="filter-btn">A2</button>
+            <button onclick="filterGrammar('B1')" class="filter-btn">B1</button>
+        </div>
+        <div id="grammar-list" class="grid-list"></div>
+
+        <!-- Detail Grammatik (Interactive) -->
+        <div id="grammar-detail" class="glass-card" style="display: none;">
+            <button onclick="tutupGrammar()" class="btn-outline mb-3">⬅ Zurück</button>
+            <span id="g-level" class="level-badge"></span>
+            <h2 id="g-title" class="mt-2">Judul</h2>
+            
+            <div class="grammar-content mt-3">
+                <div class="g-section">
+                    <h4>Erklärung (Penjelasan)</h4>
+                    <p id="g-explanation"></p>
+                </div>
+                <div class="g-section alert-box">
+                    <h4>Merke! (Ingat)</h4>
+                    <p id="g-merke"></p>
+                </div>
+                <div class="g-section">
+                    <h4>Übung (Latihan)</h4>
+                    <p id="g-question" class="question-text"></p>
+                    <div id="g-options" class="options-grid"></div>
+                    <p id="g-feedback" class="feedback-text"></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. WORTSCHATZ (KUIS & FLASHCARD & KAMUS) -->
+    <section id="wortschatz" class="page">
+        <div class="page-header">
+            <h2>Wortschatz 🧠</h2>
+            <div class="tab-buttons">
+                <button onclick="switchWortschatzTab('kuis')" class="tab-btn active" id="tab-kuis">Kuis</button>
+                <button onclick="switchWortschatzTab('flashcard')" class="tab-btn" id="tab-flashcard">Meine Wörter</button>
+                <button onclick="switchWortschatzTab('kamus')" class="tab-btn" id="tab-kamus">Kamus AI</button>
+            </div>
+        </div>
+
+        <!-- Tab Kuis -->
+        <div id="w-kuis" class="tab-content active-tab glass-card text-center">
+            <span class="badge mb-3">Daily Challenge</span>
+            <h2 id="question-text" class="mb-3">Memuat...</h2>
+            <div class="input-group">
+                <input type="text" id="user-answer" placeholder="Antwort (Jawaban)..." autocomplete="off">
+                <button id="submit-btn" class="btn-primary">Kirim ⚡</button>
+            </div>
+            <p id="feedback" class="feedback-text mt-2"></p>
+        </div>
+
+        <!-- Tab Flashcard -->
+        <div id="w-flashcard" class="tab-content">
+            <div class="flex-between mb-2">
+                <span id="flashcard-count" class="text-muted">0 Kata disimpan</span>
+            </div>
+            <div id="flashcard-list" class="grid-list empty-state-container"></div>
+        </div>
+
+        <!-- Tab Kamus -->
+        <div id="w-kamus" class="tab-content glass-card">
+            <div class="input-group">
+                <input type="text" id="search-dict" placeholder="Ketik kata (Jerman/Indo)..." autocomplete="off">
+                <button onclick="tanyaAI()" class="btn-primary">Cari 🔍</button>
+            </div>
+            <div id="dict-result" class="result-box empty-state mt-3">Hasil terjemahan...</div>
+        </div>
+    </section>
+
+    <!-- 4. LESEN (ARTIKEL) -->
+    <section id="lesen" class="page">
+        <div id="article-list-view">
+            <div class="page-header">
+                <h2>Lesen 📖</h2>
+                <p>Latih kemampuan membacamu.</p>
+            </div>
+            <div class="filter-container">
+                <button onclick="filterLevel('all')" class="filter-btn active">Semua</button>
+                <button onclick="filterLevel('A1')" class="filter-btn">A1</button>
+                <button onclick="filterLevel('A2')" class="filter-btn">A2</button>
+                <button onclick="filterLevel('B1')" class="filter-btn">B1</button>
+                <button onclick="filterLevel('B2')" class="filter-btn">B2</button>
+            </div>
+            <div id="article-list-container" class="grid-list empty-state-container"></div>
+        </div>
+
+        <!-- Detail Artikel -->
+        <div id="article-detail-view" class="glass-card" style="display: none;">
+            <div class="flex-between mb-3">
+                <button onclick="tutupArtikel()" class="btn-outline">⬅ Zurück</button>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="translate-toggle" onchange="toggleTranslation(this)">
+                    <span class="slider"></span>
+                    <span class="toggle-label">💡 Übersetzung</span>
+                </label>
             </div>
             
-            <div class="features-grid">
-                <div class="feature-card"><h3>🧠 Kuis Adaptif</h3><p>Evaluasi memori kosakatamu.</p></div>
-                <div class="feature-card"><h3>🔊 Pengucapan</h3><p>Pelajari aksen Jerman asli.</p></div>
-                <div class="feature-card"><h3>📖 Reading</h3><p>Teks disesuaikan CEFR.</p></div>
+            <div class="article-meta">
+                <span id="detail-level" class="level-badge"></span>
+                <span id="detail-theme" class="theme-tag">Tema</span>
             </div>
-        </section>
-
-        <!-- 2. KUIS -->
-        <section id="kuis" class="page">
-            <div class="card main-card">
-                <div class="card-header">
-                    <span class="badge">Wortschatz Challenge</span>
-                    <div class="stats-group">
-                        <span id="streak-badge">🔥 Streak: 0</span>
-                        <span id="score-badge">⭐ Skor: <span id="score">0</span></span>
-                    </div>
-                </div>
-                <h2 id="question-text">Memuat...</h2>
-                <div class="input-group">
-                    <input type="text" id="user-answer" placeholder="Ketik jawaban Jerman..." autocomplete="off">
-                    <button id="submit-btn" class="btn-primary">Kirim</button>
-                </div>
-                <p id="feedback" class="feedback-text"></p>
-            </div>
-        </section>
-
-        <!-- 3. KAMUS -->
-        <section id="kamus" class="page">
-            <div class="card main-card">
-                <div class="card-header"><span class="badge">AI Kamus & Deteksi</span></div>
-                <div class="input-group">
-                    <input type="text" id="search-dict" placeholder="Ketik kata (Jerman/Indo)..." autocomplete="off">
-                    <button onclick="tanyaAI()" class="btn-primary">Cari 🔍</button>
-                </div>
-                <div id="dict-result" class="result-box empty-state">Hasil terjemahan akan muncul di sini.</div>
-            </div>
-        </section>
-
-        <!-- 4. ARTIKEL -->
-        <section id="artikel" class="page">
-            <div id="article-list-view">
-                <div class="filter-container">
-                    <button onclick="filterLevel('all')" class="filter-btn active">Semua</button>
-                    <button onclick="filterLevel('a1')" class="filter-btn">A1</button>
-                    <button onclick="filterLevel('a2')" class="filter-btn">A2</button>
-                    <button onclick="filterLevel('b1')" class="filter-btn">B1</button>
-                    <button onclick="filterLevel('b2')" class="filter-btn">B2</button>
-                    <button onclick="filterLevel('c1')" class="filter-btn">C1</button>
-                    <button onclick="filterLevel('c2')" class="filter-btn">C2</button>
-                </div>
-                <div id="article-list-container" class="grid-list"></div>
+            <h2 id="detail-title" class="mt-2 mb-3">Judul</h2>
+            
+            <!-- Link Grammatik dalam Artikel -->
+            <div id="article-grammar-link" class="grammar-hint-box mb-3" style="display: none;">
+                <span class="icon">📌</span> 
+                <span>Fokus Grammatik: <strong id="hint-g-title">Präsens</strong></span>
+                <button class="btn-small ml-auto" onclick="bukaGrammarDariArtikel()">Lernen →</button>
             </div>
 
-            <div id="article-detail-view" class="card main-card" style="display: none;">
-                <div class="detail-header">
-                    <button onclick="tutupArtikel()" class="btn-icon">⬅ Kembali</button>
-                    <button onclick="toggleSuggestion()" class="btn-outline">💡 Translate Paragraf</button>
-                </div>
-                <div class="article-meta">
-                    <span id="detail-theme" class="theme-tag">Tema</span>
-                    <span id="detail-read-time" class="time-tag">⏱ 2 min</span>
-                </div>
-                <h2 id="detail-title">Judul</h2>
-                <div id="suggestion-box" class="suggestion-box"></div>
-                <div id="detail-content" class="article-body"></div>
-            </div>
-        </section>
-
-        <!-- 5. FLASHCARD -->
-        <section id="flashcard" class="page">
-            <div class="card main-card">
-                <div class="card-header">
-                    <h2>🗂️ Bank Kosakata</h2>
-                    <span id="flashcard-count" class="badge">0 Kata</span>
-                </div>
-                <div id="flashcard-list" class="grid-list"></div>
-            </div>
-        </section>
-
-        <!-- 6. DONASI (Sudah dengan QRIS dan Saweria yang benar) -->
-        <section id="donasi" class="page">
-            <div class="card donation-card" style="text-align: center; border: 1px solid var(--accent); background: linear-gradient(145deg, #161b22, #1c2128);">
-                <h2 style="color: var(--accent); margin-top: 0;">Dukung Server! ☕</h2>
-                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Traktir kopi agar platform ini bebas iklan dan server tetap hidup.</p>
-                
-                <!-- Path foto disesuaikan ke folder foto/ -->
-                <img src="foto/qrisdonasi.png" alt="QRIS Gopay" style="width: 100%; max-width: 200px; border-radius: 12px; margin-bottom: 16px; border: 2px dashed var(--accent); background: white; padding: 4px;">
-                <br>
-                <a href="https://saweria.co/LeerBroDeutsch" target="_blank" style="display: inline-block; background: var(--accent); color: var(--bg-dark); padding: 12px 24px; border-radius: 10px; font-weight: 700; text-decoration: none; margin-top: 10px;">Donate via Saweria 💸</a>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- Bottom Navigation Mobile (Ditambah Menu Donasi dan bisa di-scroll kesamping) -->
-    <nav class="bottom-nav" style="overflow-x: auto; white-space: nowrap; justify-content: flex-start; gap: 25px; padding: 10px 25px;">
-        <a href="#" onclick="showPage('landing')" class="nav-item active">🏠<br>Home</a>
-        <a href="#" onclick="showPage('kuis')" class="nav-item">🎮<br>Kuis</a>
-        <a href="#" onclick="showPage('kamus')" class="nav-item">🔍<br>Kamus</a>
-        <a href="#" onclick="showPage('artikel')" class="nav-item">📚<br>Artikel</a>
-        <a href="#" onclick="showPage('flashcard')" class="nav-item">🗂️<br>Flashcard</a>
-        <a href="#" onclick="showPage('donasi')" class="nav-item">☕<br>Donasi</a>
-    </nav>
-
-    <!-- Terjemahan Pop-up -->
-    <div id="translation-popup" class="popup-modal">
-        <span class="close-popup" onclick="closePopup()">✕</span>
-        <div id="popup-word" class="popup-title">Word</div>
-        <div id="popup-meaning" class="popup-desc">Menerjemahkan...</div>
-        <div class="popup-actions">
-            <button class="btn-action audio-btn" id="btn-suara">🔊 Dengarkan</button>
-            <button class="btn-action save-btn" id="btn-simpan">💾 Simpan</button>
+            <!-- Konten Artikel -->
+            <div id="detail-content" class="article-body"></div>
         </div>
-    </div>
+    </section>
 
-    <!-- Path JS sudah disesuaikan ke folder js/ -->
-    <script src="js/supabase-config.js"></script>
-    <script src="js/app.js"></script>
+    <!-- 5. PROFIL & DONASI -->
+    <section id="profil" class="page">
+        <div class="glass-card text-center mb-4">
+            <div class="profile-avatar">👨‍🎓</div>
+            <h2>Dein Profil</h2>
+            <div class="profile-stats grid-2 mt-3">
+                <div class="stat-box"><h3><span id="prof-xp">0</span></h3><p>Total XP ✨</p></div>
+                <div class="stat-box"><h3><span id="prof-streak">0</span></h3><p>Tage Streak 🔥</p></div>
+            </div>
+        </div>
+
+        <div class="glass-card text-center donation-card">
+            <h3 style="color: var(--accent);">Dukung Server! ☕</h3>
+            <p class="text-muted text-sm mb-3">Traktir kopi agar platform ini bebas iklan dan server tetap hidup.</p>
+            <img src="foto/qrisdonasi.png" alt="QRIS Gopay" class="qris-img">
+            <br>
+            <a href="https://saweria.co/LeerBroDeutsch" target="_blank" class="btn-donate mt-3">Donate via Saweria 💸</a>
+        </div>
+    </section>
+
+</main>
+
+<!-- Bottom Navigation Mobile -->
+<nav class="bottom-nav">
+    <a href="#" onclick="showPage('dashboard')" class="nav-item active">🏠<span>Home</span></a>
+    <a href="#" onclick="showPage('lernen')" class="nav-item">📚<span>Lernen</span></a>
+    <a href="#" onclick="showPage('wortschatz')" class="nav-item">🧠<span>Wortschatz</span></a>
+    <a href="#" onclick="showPage('lesen')" class="nav-item">📖<span>Lesen</span></a>
+    <a href="#" onclick="showPage('profil')" class="nav-item">⚙️<span>Profil</span></a>
+</nav>
+
+<!-- Pop-up Kata Modern -->
+<div id="translation-popup" class="popup-modal glass-effect">
+    <span class="close-popup" onclick="closePopup()">✕</span>
+    <div class="popup-content">
+        <div id="popup-word" class="popup-title">Word</div>
+        <div id="popup-meaning" class="popup-desc text-muted">Menerjemahkan...</div>
+    </div>
+    <div class="popup-actions mt-3">
+        <button class="btn-action audio-btn" id="btn-suara">🔊 Hören</button>
+        <button class="btn-action save-btn" id="btn-simpan">💾 Speichern</button>
+    </div>
+</div>
+
+<!-- XP Animation Overlay -->
+<div id="xp-toast" class="xp-toast">+10 XP ✨</div>
+
+<script src="js/supabase-config.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>
