@@ -22,7 +22,9 @@ async function loginAdmin() {
     const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
     
     if (error) {
-        errorEl.innerText = "Gagal: Email/Password salah.";
+        // KODE YANG DIUBAH: Sekarang akan menampilkan error asli dari database!
+        errorEl.innerText = "Error: " + error.message;
+        console.error("Supabase Error Detail:", error);
     } else {
         errorEl.innerText = "";
     }
